@@ -10,6 +10,7 @@
 #define MAX_INFO_SIZE 150
 #define MAX_PATH_SIZE 100
 #define MAX_LINE_SIZE 1024
+#define MAX_ARGS 100
 #define PAUSED 0
 #define NORMAL 1
 
@@ -71,6 +72,25 @@ char *get_formatted_command(void)
     assert(0);
 }
 
+char **tokenize_command(char *cmd, const char *delim)
+{
+    char **command = (char **)malloc((MAX_ARGS + 1) * sizeof(char *)), *token;
+    int index = 0;
+    /* get the first token */
+    token = strtok(cmd, delim);
+
+    /* walk through other tokens */
+    while (token != NULL)
+    {
+        command[index++] = token;
+        if (index == MAX_ARGS)
+            break;
+        token = strtok(NULL, delim);
+    }
+    command[index] = NULL;
+    return command;
+}
+
 static char *get_info(void)
 {
     char *info = (char *)malloc(MAX_INFO_SIZE * sizeof(char)), *path, *login = getlogin();
@@ -80,7 +100,7 @@ static char *get_info(void)
     {
         fprintf(stderr, "Path size limit exceeded.\n");
     }
-    sprintf(info, "%s@cs345sh%s$ ", login, path);
+    sprintf(info, "\x1b[32m%s@cs345sh\x1b[36m%s\x1b[0m$ ", login, path);
     free(path);
     return info;
 }

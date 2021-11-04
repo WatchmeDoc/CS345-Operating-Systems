@@ -4,4 +4,4 @@
 /**
  * Executes given cmd string properly :)
  */
-int execute_command(char *cmd);
+int execute_command(char **cmd);

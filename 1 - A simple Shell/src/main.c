@@ -8,26 +8,47 @@
 
 int main()
 {
-    char *input = NULL;
+    char *input = NULL, **input_tokenized = NULL, delim[] = " ";
     int id, fork_id;
 
-    while (strcmp((input = get_formatted_command()), "exit") != 0)
+    while (1)
     {
-        fork_id = fork();
-        if (fork_id == 0)
+        input = get_formatted_command();
+        input_tokenized = tokenize_command(input, delim);
+
+        if (strcmp(input_tokenized[0], "exit") == 0)
+            break;
+        if (strcmp(input_tokenized[0], "cd") == 0)
         {
-            id = execute_command(input);
-            if (id == FAILURE)
-            {
-                fprintf(stderr, "Error encountered while trying to execute the command");
-                exit(-1);
-            }
-            return 0;
+            if (chdir(input_tokenized[1]) == -1)
+                printf("-bash: cd: %s: No such file or directory\n", input_tokenized[1]);
         }
         else
-            wait(NULL);
+        {
+            fork_id = fork();
+            if (fork_id == -1)
+            {
+                fprintf(stderr, "Could not create a child process!\n");
+                exit(-1);
+            }
+            if (fork_id == 0)
+            {
+                id = execute_command(input_tokenized);
+                if (id == FAILURE)
+                {
+                    fprintf(stderr, "Error encountered while trying to execute the command\n");
+                    _exit(-1);
+                }
+                _exit(0);
+            }
+            else
+                wait(NULL);
+        }
 
         free(input);
+        free(input_tokenized);
     }
+    free(input);
+    free(input_tokenized);
     return 0;
 }
