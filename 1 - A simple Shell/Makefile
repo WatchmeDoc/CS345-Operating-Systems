@@ -3,7 +3,7 @@ all: shell
 
 BUILD_DIR = /bin
 CC = gcc
-CFLAGS = -Wall -ansi -pedantic 
+CFLAGS = -Wall -ansi -pedantic -g
 shell:
 	@mkdir -p $(BUILD_DIR)
 	@$(CC) $(CFLAGS) src/*.c -o bin/$@ -lreadline 

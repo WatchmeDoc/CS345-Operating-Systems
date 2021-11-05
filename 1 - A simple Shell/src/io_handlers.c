@@ -7,16 +7,15 @@
 #include <readline/history.h>
 #include "io_handlers.h"
 
-#define MAX_INFO_SIZE 150
-#define MAX_PATH_SIZE 100
+#define MAX_INFO_SIZE 250
+#define MAX_PATH_SIZE 150
 #define MAX_LINE_SIZE 1024
 #define MAX_ARGS 100
-#define PAUSED 0
-#define NORMAL 1
+
+#define SET_STATUS(c) c == ';' ? COLON_STOP : (c == '|' ? PIPE_STOP : NORMAL)
 
 static char buffer[MAX_LINE_SIZE + 1];
 static size_t buff_index = 0;
-static int input_status = NORMAL;
 
 /**
  * Returns a null terminated, dynamically allocated string, formatted as <user>@cs345sh/<dir>$.
@@ -33,7 +32,7 @@ char *get_formatted_command(void)
     char *line, c;
     size_t line_index = 0;
 
-    if (input_status != PAUSED)
+    if (input_status == NORMAL)
         init_buffer();
 
     line = (char *)malloc((strlen(&(buffer[buff_index])) + 1) * sizeof(char));
@@ -48,16 +47,12 @@ char *get_formatted_command(void)
             while ((c = buffer[buff_index]) == ' ')
                 buff_index++;
             continue;
+        case '|': /* Return to execute the already read command before moving on */
         case ';': /* Return to execute the already read command before moving on */
-            input_status = PAUSED;
-            if (line_index > 0 && line[line_index - 1] == ' ') /* Remove any spaces in the end of the command :P */
-                line_index--;
-            line[line_index] = '\0';
-            return line;
         case EOF:
         case '\n':
         case '\0': /* Those cases end up the same: The command line is finished. */
-            input_status = NORMAL;
+            input_status = SET_STATUS(c);
             if (line_index > 0 && line[line_index - 1] == ' ') /* Remove any spaces in the end of the command :P */
                 line_index--;
             line[line_index] = '\0';
