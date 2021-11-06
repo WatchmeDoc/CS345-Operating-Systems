@@ -17,8 +17,8 @@ int main()
     {
 
         input = get_formatted_command();
+        
         input_tokenized = tokenize_command(input, delim);
-
 
         if (strcmp(input_tokenized[0], "exit") == 0)
             break;

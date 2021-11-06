@@ -8,3 +8,5 @@
 int normal_execution(char **cmd);
 
 int pipe_execution(pipe_list commands);
+
+int redirect_if_necessary(char **cmd);

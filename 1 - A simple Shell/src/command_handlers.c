@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <assert.h>
+#include <fcntl.h>
 
 #include "command_handlers.h"
 #define MAX_PIPES 1000
@@ -13,6 +14,78 @@ static void close_pipes(int pipes[][2], int N);
  */
 int normal_execution(char **command)
 {
+    int i;
+    int fd1 = -1, fd2 = -1, append = 0;
+    for (i = 0; command[i] != NULL; i++)
+    {
+        if (command[i][0] == '<')
+        {
+
+            if (command[i][1] == '\0')
+            {
+                command[i] = NULL;
+                i++;
+            }
+            else
+                command[i] = &(command[i][1]);
+
+            if (fd1 != -1)
+            {
+                if (close(fd1) < 0)
+                {
+                    perror("Closing previous input file");
+                    exit(-1);
+                }
+            }
+            fd1 = open(command[i], O_RDONLY);
+            if (fd1 < 0)
+            {
+                perror("Redirecting input");
+                exit(-1);
+            }
+            dup2(fd1, STDIN_FILENO);
+            command[i] = NULL;
+        }
+        else if (command[i][0] == '>')
+        {
+            if (command[i][1] == '\0')
+            {
+                command[i] = NULL;
+                i++;
+            }
+            else if (command[i][1] == '>')
+            {
+                command[i] = NULL;
+                i++;
+                append = 1;
+            }
+            else
+                command[i] = &(command[i][2]);
+            if (fd2 != -1)
+            {
+                if (close(fd1) < 0)
+                {
+                    perror("Closing previous input file");
+                    exit(-1);
+                }
+            }
+            if (append == 1)
+                fd2 = open(command[i], O_WRONLY | O_CREAT | O_APPEND, 00777);
+            else
+                fd2 = open(command[i], O_WRONLY | O_CREAT | O_TRUNC, 00777);
+            if (fd2 < 0)
+            {
+                perror("Redirecting output");
+                exit(-1);
+            }
+            dup2(fd2, STDOUT_FILENO);
+            command[i] = NULL;
+        }
+    }
+    if (fd1 != -1)
+        close(fd1);
+    if (fd2 != -1)
+        close(fd2);
     if (execvp(command[0], command) == -1)
         return FAILURE;
     assert(0);
@@ -64,7 +137,7 @@ int pipe_execution(pipe_list commands)
                 }
             }
             close_pipes(pipefds, pipe_count);
-            if (execvp(curr_command->command[0], curr_command->command) == -1)
+            if (normal_execution(curr_command->command) == -1)
             {
                 perror("Error while executing command in multiple pipes.");
                 exit(-1);

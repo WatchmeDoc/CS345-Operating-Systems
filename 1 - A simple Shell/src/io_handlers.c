@@ -47,7 +47,7 @@ char *get_formatted_command(void)
             while ((c = buffer[buff_index]) == ' ')
                 buff_index++;
             continue;
-        case '|': /* Return to execute the already read command before moving on */
+        case '|': /* Return to process the already read command before moving on */
         case ';': /* Return to execute the already read command before moving on */
         case EOF:
         case '\n':
