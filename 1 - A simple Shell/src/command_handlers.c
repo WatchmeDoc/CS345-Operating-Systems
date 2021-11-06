@@ -123,7 +123,7 @@ int pipe_execution(pipe_list commands)
                 }
             }
             close_pipes(pipefds, pipe_count);
-            if (normal_execution(curr_command->command) == -1)
+            if (normal_execution(curr_command->command) == FAILURE)
             {
                 perror("Error while executing command in multiple pipes.");
                 exit(-1);
