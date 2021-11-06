@@ -1,3 +1,8 @@
+/*
+Author: Georgios Manos
+Academic ID: 4333
+E-mail: csd4333@csd.uoc.gr
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,6 +52,26 @@ char *get_formatted_command(void)
             while ((c = buffer[buff_index]) == ' ')
                 buff_index++;
             continue;
+        case '<': /* Make sure there is 1 space before and after those operators */
+            if (line_index != 0)
+            {
+                if (line[line_index - 1] != ' ')
+                    line[line_index++] = ' ';
+            }
+            line[line_index++] = c;
+            if (buffer[buff_index] != ' ')
+                line[line_index++] = ' ';
+            continue;
+        case '>':
+            if (line_index != 0)
+            {
+                if (line[line_index - 1] != ' ' && line[line_index - 1] != '>')
+                    line[line_index++] = ' ';
+            }
+            line[line_index++] = c;
+            if (buffer[buff_index] != ' ' && buffer[buff_index] != '>')
+                line[line_index++] = ' ';
+            continue;
         case '|': /* Return to process the already read command before moving on */
         case ';': /* Return to execute the already read command before moving on */
         case EOF:
@@ -62,7 +87,6 @@ char *get_formatted_command(void)
         }
         assert(buff_index <= MAX_LINE_SIZE);
         line[line_index++] = c;
-        assert(line_index <= buff_index);
     }
     assert(0);
 }

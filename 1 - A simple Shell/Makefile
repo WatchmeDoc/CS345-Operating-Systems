@@ -1,7 +1,11 @@
 
+# Author: Georgios Manos
+# Academic ID: 4333
+# E-mail: csd4333@csd.uoc.gr
+
 all: shell
 
-BUILD_DIR = /bin
+BUILD_DIR = bin
 CC = gcc
 CFLAGS = -Wall -ansi -pedantic -g
 shell:
@@ -10,5 +14,5 @@ shell:
 	@printf "\n-> Shell created successfully. Execute using ./bin/shell\n\n"
 
 clean:
-	@rm -f bin/shell
+	@rm -r bin
 	@clear

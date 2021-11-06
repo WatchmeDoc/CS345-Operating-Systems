@@ -1,5 +1,8 @@
-
-
+/*
+Author: Georgios Manos
+Academic ID: 4333
+E-mail: csd4333@csd.uoc.gr
+*/
 enum
 {
     NORMAL = 0,

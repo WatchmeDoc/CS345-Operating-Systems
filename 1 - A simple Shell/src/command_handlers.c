@@ -1,3 +1,8 @@
+/*
+Author: Georgios Manos
+Academic ID: 4333
+E-mail: csd4333@csd.uoc.gr
+*/
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -16,19 +21,12 @@ int normal_execution(char **command)
 {
     int i;
     int fd1 = -1, fd2 = -1, append = 0;
-    for (i = 0; command[i] != NULL; i++)
+    for (i = 0; command[i] != NULL; i++) /* Check for any redirections here */
     {
         if (command[i][0] == '<')
         {
-
-            if (command[i][1] == '\0')
-            {
-                command[i] = NULL;
-                i++;
-            }
-            else
-                command[i] = &(command[i][1]);
-
+            command[i] = NULL;
+            i++;
             if (fd1 != -1)
             {
                 if (close(fd1) < 0)
@@ -44,23 +42,12 @@ int normal_execution(char **command)
                 exit(-1);
             }
             dup2(fd1, STDIN_FILENO);
-            command[i] = NULL;
         }
         else if (command[i][0] == '>')
         {
-            if (command[i][1] == '\0')
-            {
-                command[i] = NULL;
-                i++;
-            }
-            else if (command[i][1] == '>')
-            {
-                command[i] = NULL;
-                i++;
-                append = 1;
-            }
-            else
-                command[i] = &(command[i][2]);
+            append = command[i][1] == '>'; /* It will be either that or '\0' */
+            command[i] = NULL;
+            i++;
             if (fd2 != -1)
             {
                 if (close(fd1) < 0)
@@ -69,7 +56,7 @@ int normal_execution(char **command)
                     exit(-1);
                 }
             }
-            if (append == 1)
+            if (append)
                 fd2 = open(command[i], O_WRONLY | O_CREAT | O_APPEND, 00777);
             else
                 fd2 = open(command[i], O_WRONLY | O_CREAT | O_TRUNC, 00777);
@@ -79,14 +66,13 @@ int normal_execution(char **command)
                 exit(-1);
             }
             dup2(fd2, STDOUT_FILENO);
-            command[i] = NULL;
         }
     }
     if (fd1 != -1)
         close(fd1);
     if (fd2 != -1)
         close(fd2);
-    if (execvp(command[0], command) == -1)
+    if (execvp(command[0], command) == -1) /* Execute! */
         return FAILURE;
     assert(0);
 }
@@ -102,7 +88,7 @@ int pipe_execution(pipe_list commands)
     pipe_count = command_count - 1;
     for (i = 0; i < pipe_count; i++) /* For 3 piped commands we have 2 pipes, for 4 piped commands we have 3 pipes etc. */
     {
-        if (pipe(pipefds[i]) < 0)
+        if (pipe(pipefds[i]) < 0) /* Create pipe between all processes */
         {
             perror("Error creating pipe");
             exit(-1);
@@ -148,7 +134,7 @@ int pipe_execution(pipe_list commands)
         curr_command = curr_command->next;
     }
     close_pipes(pipefds, pipe_count);
-    while (wait(NULL) > 0)
+    while (wait(NULL) > 0) /* Wait for all child processes to finish */
         ;
     return SUCCESS;
 }

@@ -1,3 +1,8 @@
+/*
+Author: Georgios Manos
+Academic ID: 4333
+E-mail: csd4333@csd.uoc.gr
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +22,7 @@ int main()
     {
 
         input = get_formatted_command();
-        
+
         input_tokenized = tokenize_command(input, delim);
 
         if (strcmp(input_tokenized[0], "exit") == 0)
@@ -39,7 +44,11 @@ int main()
                     input_tokenized = tokenize_command(input, delim);
                 }
                 append_list(list, input_tokenized);
-                pipe_execution(list);
+                if (pipe_execution(list) == FAILURE)
+                {
+                    perror("Pipeline error");
+                    _exit(-1);
+                }
                 free_list(list);
             }
             else
@@ -55,7 +64,7 @@ int main()
                     id = normal_execution(input_tokenized);
                     if (id == FAILURE)
                     {
-                        fprintf(stderr, "Error encountered while trying to execute the command\n");
+                        perror("No such command");
                         _exit(-1);
                     }
                     assert(0);
