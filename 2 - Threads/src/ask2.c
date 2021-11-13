@@ -1,3 +1,11 @@
+/**
+ * @file ask2.c
+ * @author George Manos (csd4333@csd.uoc.gr)
+ * @brief Cars embarking on ferry assignment for cs-345 Operating Systems course
+ * @date 2021-11-13
+ *
+ * 
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

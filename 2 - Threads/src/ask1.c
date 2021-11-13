@@ -1,3 +1,11 @@
+/**
+ * @file ask1.c
+ * @author George Manos (csd4333@csd.uoc.gr)
+ * @brief Narrow road assignment for cs-345 Operating Systems course
+ * @date 2021-11-13
+ *
+ * 
+ */
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,8 +97,28 @@ int main(int argc, char *argv[])
     srand(time(NULL));
     th = (pthread_t *)malloc((threads + 1) * sizeof(pthread_t));
     a = (int *)malloc(2 * threads * sizeof(int));
-    /* 1st Priority street. */
-    args[EAST] = MAX_CARS_ON_STREET;
+
+    /* Create producer threads */
+    for (i = 0; i < threads; i++)
+    {
+        a[2 * i] = rand() % 2;
+        a[2 * i + 1] = i;
+        side_count[a[2 * i]]++;
+        if (i == 0)
+            args[a[0]] = MAX_CARS_ON_STREET; /* 1st Priority street. */
+
+        if (pthread_create(&th[i], NULL, pass, &a[2 * i]) != 0)
+        {
+            perror("Failed to create thread.");
+            exit(1);
+        }
+    }
+    /* Create an extra thread (consumer) */
+    if (pthread_create(&th[i], NULL, consume, NULL) != 0)
+    {
+        perror("Failed to create thread.");
+        exit(1);
+    }
     /* Init semaphores */
     for (i = 0; i < 3; i++)
     {
@@ -105,24 +133,6 @@ int main(int argc, char *argv[])
     {
         perror("Failed to init mutex.");
         exit(3);
-    }
-    /* Create producer threads */
-    for (i = 0; i < threads; i++)
-    {
-        a[2 * i] = rand() % 2;
-        a[2 * i + 1] = i;
-        side_count[a[2 * i]]++;
-        if (pthread_create(&th[i], NULL, pass, &a[2 * i]) != 0)
-        {
-            perror("Failed to create thread.");
-            exit(1);
-        }
-    }
-    /* Create an extra thread (consumer) */
-    if (pthread_create(&th[i], NULL, consume, NULL) != 0)
-    {
-        perror("Failed to create thread.");
-        exit(1);
     }
     /* For all threads, join! */
     for (i = 0; i < threads + 1; i++)
