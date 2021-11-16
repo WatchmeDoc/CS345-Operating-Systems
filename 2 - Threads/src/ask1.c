@@ -91,13 +91,18 @@ void *consume(void *ptr)
 int main(int argc, char *argv[])
 {
     pthread_t *th;
-    int i, *a, threads, args[] = {0, 0, 0};
+    int i, *a, threads, args[] = {0, 0, 0}, j;
     /* Data init, mallocs etc */
     threads = atoi(argv[THREAD_NUM_POS]);
     srand(time(NULL));
     th = (pthread_t *)malloc((threads + 1) * sizeof(pthread_t));
     a = (int *)malloc(2 * threads * sizeof(int));
-
+    /* Init mutex */
+    if (pthread_mutex_init(&car_count_mutex, NULL) != 0)
+    {
+        perror("Failed to init mutex.");
+        exit(3);
+    }
     /* Create producer threads */
     for (i = 0; i < threads; i++)
     {
@@ -105,7 +110,18 @@ int main(int argc, char *argv[])
         a[2 * i + 1] = i;
         side_count[a[2 * i]]++;
         if (i == 0)
+        {
             args[a[0]] = MAX_CARS_ON_STREET; /* 1st Priority street. */
+            /* Init semaphores */
+            for (j = 0; j < 3; j++)
+            {
+                if (sem_init(&sem[j], 0, args[j]) != 0)
+                {
+                    perror("Failed to init semaphore.");
+                    exit(0);
+                }
+            }
+        }
 
         if (pthread_create(&th[i], NULL, pass, &a[2 * i]) != 0)
         {
@@ -119,21 +135,7 @@ int main(int argc, char *argv[])
         perror("Failed to create thread.");
         exit(1);
     }
-    /* Init semaphores */
-    for (i = 0; i < 3; i++)
-    {
-        if (sem_init(&sem[i], 0, args[i]) != 0)
-        {
-            perror("Failed to init semaphore.");
-            exit(0);
-        }
-    }
-    /* Init mutex */
-    if (pthread_mutex_init(&car_count_mutex, NULL) != 0)
-    {
-        perror("Failed to init mutex.");
-        exit(3);
-    }
+
     /* For all threads, join! */
     for (i = 0; i < threads + 1; i++)
     {
